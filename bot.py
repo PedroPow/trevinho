@@ -4,6 +4,8 @@ import discord
 import asyncio
 from discord.ext import commands
 from discord.ui import Modal, TextInput
+import os
+
 
 intents = discord.Intents.default()
 intents.message_content = True
