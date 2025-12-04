@@ -136,41 +136,55 @@ async def on_member_join(member):
 #        COMANDO /clearall
 # ============================
 
-@bot.tree.command(name="clearall", description="Limpa todas as mensagens do canal.")
+@bot.tree.command(name="clearall", description="Apaga todas as mensagens do canal atual.")
 async def clearall(interaction: discord.Interaction):
 
-    # Restrição por cargo
-    if not any(role.id == ADMIN_ROLE_ID for role in interaction.user.roles):
-        return await interaction.response.send_message("❌ Você não tem permissão para usar este comando.", ephemeral=True)
+    # Permissão pelo cargo autorizado
+    if not any(role.id in CARGOS_AUTORIZADOS for role in interaction.user.roles):
+        return await interaction.response.send_message(
+            "❌ Você não tem permissão para usar este comando.",
+            ephemeral=True
+        )
 
     canal = interaction.channel
+    guild = interaction.guild
+    log_channel = guild.get_channel(LOG_CHANNEL_ID)
 
-    await interaction.response.send_message(f"🧹 Limpando o canal **{canal.name}**...", ephemeral=True)
+    await interaction.response.send_message(
+        f"🧹 Limpando todas as mensagens do canal **{canal.name}**...",
+        ephemeral=True
+    )
 
-    # Tentar limpar tudo
+    # Limpa mensagens
     try:
-        deleted = await canal.purge(limit=None)
-        qnt = len(deleted)
+        await canal.purge(limit=None)
     except:
         await canal.purge()
-        qnt = "desconhecida (purge parcial)"
 
-    # Mensagem pública (no canal limpo)
-    embed = discord.Embed(
+    # Envia confirmação no canal limpo
+    embed_confirm = discord.Embed(
         title="🧹 Canal Limpo",
-        description=f"Todas as mensagens foram apagadas!",
+        description=f"As mensagens do canal `{canal.name}` foram apagadas com sucesso!",
         color=discord.Color.green()
     )
-    await canal.send(embed=embed)
+    await canal.send(embed=embed_confirm)
 
-    # Enviar log no canal de logs
-    await enviar_log(
-        interaction.guild,
-        "🧹 Canal Limpo",
-        f"**Administrador:** {interaction.user.mention}\n"
-        f"**Canal:** {canal.mention}\n"
-        f"**Mensagens apagadas:** {qnt}"
+    # Log completo
+    embed_log = discord.Embed(
+        title="🧹 Log - Canal Limpo",
+        description=(
+            f"**Usuário:** {interaction.user.mention}\n"
+            f"**Canal:** {canal.mention}\n"
+            f"**Ação:** Todas as mensagens foram apagadas."
+        ),
+        color=discord.Color.orange(),
+        timestamp=discord.utils.utcnow()
     )
+    embed_log.set_footer(text=f"ID: {interaction.user.id}")
+
+    await log_channel.send(embed=embed_log)
+
+
 
 
 # ============================
@@ -287,36 +301,18 @@ bot.ready_once = False
 
 @bot.event
 async def on_ready():
-    if bot.ready_once:
-        return  # impede duplicações em reconexões do Discord
-
-    bot.ready_once = True
-
-    print(f"🔥 Bot iniciado como {bot.user}")
+    print(f"Bot conectado como {bot.user}")
 
     guild = bot.get_guild(GUILD_ID)
 
-    # Envia painel apenas uma vez
+    # Envia painel e verificação apenas 1 vez
     await enviar_painel(guild)
-
-    verify_channel = guild.get_channel(VERIFY_CHANNEL_ID)
-
-    embed = discord.Embed(
-        title="🔰 Sistema de Verificação",
-        description="Clique no botão abaixo para se verificar.",
-        color=discord.Color.green()
-    )
-
-    await verify_channel.purge(limit=10)
-    await verify_channel.send(embed=embed, view=VerifyButton())
 
     try:
         synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
-        print(f"Comandos sincronizados: {len(synced)}")
+        print(f"🔧 Slash Commands sincronizados: {[cmd.name for cmd in synced]}")
     except Exception as e:
-        print(f"Erro ao sincronizar: {e}")
-
-    await enviar_log(guild, "🚀 Bot Iniciado", "Todos os sistemas foram carregados com sucesso!")
+        print(f"Erro ao sincronizar comandos: {e}")
 
 
 
