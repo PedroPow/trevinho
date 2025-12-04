@@ -6,6 +6,7 @@ import os
 from discord.ext import commands
 from discord.ui import Modal, TextInput
 
+
 # ============================
 #   CONFIGURAÇÕES DO SERVIDOR
 # ============================
@@ -138,25 +139,39 @@ async def on_member_join(member):
 @bot.tree.command(name="clearall", description="Limpa todas as mensagens do canal.")
 async def clearall(interaction: discord.Interaction):
 
-    admin_role = interaction.guild.get_role(ADMIN_ROLE_ID)
-    if admin_role not in interaction.user.roles:
-        return await interaction.response.send_message("❌ Sem permissão.", ephemeral=True)
+    # Restrição por cargo
+    if not any(role.id == ADMIN_ROLE_ID for role in interaction.user.roles):
+        return await interaction.response.send_message("❌ Você não tem permissão para usar este comando.", ephemeral=True)
 
     canal = interaction.channel
-    await interaction.response.send_message(f"🧹 Limpando {canal.name}...", ephemeral=True)
 
+    await interaction.response.send_message(f"🧹 Limpando o canal **{canal.name}**...", ephemeral=True)
+
+    # Tentar limpar tudo
     try:
-        await canal.purge(limit=None)
+        deleted = await canal.purge(limit=None)
+        qnt = len(deleted)
     except:
         await canal.purge()
+        qnt = "desconhecida (purge parcial)"
 
+    # Mensagem pública (no canal limpo)
     embed = discord.Embed(
         title="🧹 Canal Limpo",
         description=f"Todas as mensagens foram apagadas!",
         color=discord.Color.green()
     )
-
     await canal.send(embed=embed)
+
+    # Enviar log no canal de logs
+    await enviar_log(
+        interaction.guild,
+        "🧹 Canal Limpo",
+        f"**Administrador:** {interaction.user.mention}\n"
+        f"**Canal:** {canal.mention}\n"
+        f"**Mensagens apagadas:** {qnt}"
+    )
+
 
 # ============================
 #         MODAL /mensagem
@@ -268,23 +283,22 @@ async def ban(interaction, membro: discord.Member, motivo: str):
 #           ON_READY
 # ============================
 
+bot.ready_once = False
+
 @bot.event
 async def on_ready():
-
-    # Evita duplicar logs, painéis e sincronizações
-    if getattr(bot, "ready_once", False):
-        return
+    if bot.ready_once:
+        return  # impede duplicações em reconexões do Discord
 
     bot.ready_once = True
 
-    print(f"🔥 Bot conectado como {bot.user}")
+    print(f"🔥 Bot iniciado como {bot.user}")
 
     guild = bot.get_guild(GUILD_ID)
 
-    # Enviar painel administrativo
+    # Envia painel apenas uma vez
     await enviar_painel(guild)
 
-    # Enviar painel de verificação
     verify_channel = guild.get_channel(VERIFY_CHANNEL_ID)
 
     embed = discord.Embed(
@@ -296,15 +310,14 @@ async def on_ready():
     await verify_channel.purge(limit=10)
     await verify_channel.send(embed=embed, view=VerifyButton())
 
-    # Sincronizar comandos
     try:
         synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
         print(f"Comandos sincronizados: {len(synced)}")
     except Exception as e:
         print(f"Erro ao sincronizar: {e}")
 
-    # Log inicial
-    await enviar_log(guild, "🚀 Bot iniciado", "Todos os sistemas ativos!")
+    await enviar_log(guild, "🚀 Bot Iniciado", "Todos os sistemas foram carregados com sucesso!")
+
 
 
 bot.run(TOKEN)
