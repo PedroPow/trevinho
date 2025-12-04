@@ -270,12 +270,21 @@ async def ban(interaction, membro: discord.Member, motivo: str):
 
 @bot.event
 async def on_ready():
+
+    # Evita duplicar logs, painéis e sincronizações
+    if getattr(bot, "ready_once", False):
+        return
+
+    bot.ready_once = True
+
     print(f"🔥 Bot conectado como {bot.user}")
 
     guild = bot.get_guild(GUILD_ID)
 
+    # Enviar painel administrativo
     await enviar_painel(guild)
 
+    # Enviar painel de verificação
     verify_channel = guild.get_channel(VERIFY_CHANNEL_ID)
 
     embed = discord.Embed(
@@ -287,12 +296,15 @@ async def on_ready():
     await verify_channel.purge(limit=10)
     await verify_channel.send(embed=embed, view=VerifyButton())
 
+    # Sincronizar comandos
     try:
         synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
         print(f"Comandos sincronizados: {len(synced)}")
     except Exception as e:
         print(f"Erro ao sincronizar: {e}")
 
+    # Log inicial
     await enviar_log(guild, "🚀 Bot iniciado", "Todos os sistemas ativos!")
+
 
 bot.run(TOKEN)
