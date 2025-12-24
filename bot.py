@@ -420,6 +420,8 @@ async def on_ready():
     print(f"🔥 Bot conectado como {bot.user}")
 
     guild = bot.get_guild(GUILD_ID)
+    bot.add_view(VerifyButton())
+         
     # envia painel e verify se guild existir
     if guild:
         try:
