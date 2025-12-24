@@ -413,7 +413,8 @@ async def on_ready():
                 embed = discord.Embed(
                     title="Sistema de Verificação",
                     description="Clique no botão abaixo para se verificar.\n\n"
-                    "• Após a verificação altere seu Nick Name no canal <#1453448841344061544>.\n"
+                    "• Após a verificação altere seu Nick Name no canal:\n"
+                    "<#1453448841344061544>.\n"
                     "• É **OBRIGATÓRIO** a Alteração do Nick após a verificação.\n"
                     "• Leia as regras no canal <#1444742456968085635>.\n"
                     "• Qualquer dúvida, contate a equipe de moderação.",
