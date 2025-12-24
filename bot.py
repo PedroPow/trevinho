@@ -419,7 +419,7 @@ async def on_ready():
                     "• Qualquer dúvida, contate a equipe de moderação.",
                     color=discord.Color.green()
                 )
-                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1447674474697850952/1453453957291708682/GIF_NATAL_2_RESOLUCAO_MENOR.gif?ex=694d81fb&is=694c307b&hm=4937965d55995b052ff708b07a9cbfb3e639f37fc6ffde21ab80bd0d17531184&")  
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1447674474697850952/1453465836332257391/Logo_Tropa_do_Trevo_3000_x_3000_px_1.gif?ex=694d8d0b&is=694c3b8b&hm=0139f13d7ee32af7b2d10a062c67f3d3f3dab03098845ec1bab5a28fea543490&")  
 
                 try:
                     await verify_channel.send(embed=embed, view=VerifyButton())
