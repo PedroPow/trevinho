@@ -413,7 +413,10 @@ async def on_ready():
                 embed = discord.Embed(
                     title="Sistema de Verificação",
                     description="Clique no botão abaixo para se verificar.\n\n"
-                    "• Após a verificação altere seu Nick Name no canal <#1453448841344061544>.\n",
+                    "• Após a verificação altere seu Nick Name no canal <#1453448841344061544>.\n"
+                    "• É **OBRIGATÓRIO** a Alteração do Nick após a verificação.\n"
+                    "• Leia as regras no canal <#1444742456968085635>.\n"
+                    "• Qualquer dúvida, contate a equipe de moderação.",
                     color=discord.Color.green()
                 )
                 embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1447674474697850952/1453453957291708682/GIF_NATAL_2_RESOLUCAO_MENOR.gif?ex=694d81fb&is=694c307b&hm=4937965d55995b052ff708b07a9cbfb3e639f37fc6ffde21ab80bd0d17531184&")  
