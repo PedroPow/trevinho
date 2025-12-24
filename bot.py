@@ -93,27 +93,45 @@ class VerifyButton(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="✅ Verificar", style=discord.ButtonStyle.success, custom_id="verify_button")
+    @discord.ui.button(
+        label="Verificar",
+        style=discord.ButtonStyle.success,
+        custom_id="verify_button",
+        emoji=discord.PartialEmoji(name="aguardando")
+    )
     async def verify(self, interaction: discord.Interaction, button: discord.ui.Button):
         role = interaction.guild.get_role(ROLE_VERIFY_ID) if interaction.guild else None
         if role is None:
-            return await interaction.response.send_message("❌ Cargo de verificação não encontrado!", ephemeral=True)
+            return await interaction.response.send_message(
+                "❌ Cargo de verificação não encontrado!",
+                ephemeral=True
+            )
 
         if role in interaction.user.roles:
-            return await interaction.response.send_message("Você já está verificado!", ephemeral=True)
+            return await interaction.response.send_message(
+                "Você já está verificado!",
+                ephemeral=True
+            )
 
         try:
             await interaction.user.add_roles(role)
         except discord.Forbidden:
-            return await interaction.response.send_message("❌ Não consegui adicionar o cargo (permissão).", ephemeral=True)
+            return await interaction.response.send_message(
+                "❌ Não consegui adicionar o cargo (permissão).",
+                ephemeral=True
+            )
 
-        await interaction.response.send_message("🎉 Você foi verificado com sucesso!", ephemeral=True)
+        await interaction.response.send_message(
+            "🎉 Você foi verificado com sucesso!",
+            ephemeral=True
+        )
 
         await enviar_log(
             interaction.guild,
             "🔔 Novo usuário verificado",
             f"**Usuário:** {interaction.user.mention}\n**Cargo:** `{role.name}`"
         )
+
 
 # ============================
 #     PAINEL ADMINISTRATIVO
