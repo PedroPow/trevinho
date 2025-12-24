@@ -93,13 +93,20 @@ class VerifyButton(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(
-        label="Verificar",
-        style=discord.ButtonStyle.success,
-        custom_id="verify_button",
-        emoji=discord.PartialEmoji(name="aguardando")
-    )
-    async def verify(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # emoji externo PELO NOME
+        emoji = discord.PartialEmoji(name="aguardando")
+
+        button = discord.ui.Button(
+            label="Verificar",
+            style=discord.ButtonStyle.success,
+            custom_id="verify_button",
+            emoji=emoji
+        )
+
+        button.callback = self.verify
+        self.add_item(button)
+
+    async def verify(self, interaction: discord.Interaction):
         role = interaction.guild.get_role(ROLE_VERIFY_ID) if interaction.guild else None
         if role is None:
             return await interaction.response.send_message(
@@ -129,9 +136,9 @@ class VerifyButton(discord.ui.View):
         await enviar_log(
             interaction.guild,
             "🔔 Novo usuário verificado",
-            f"**Usuário:** {interaction.user.mention}\n**Cargo:** `{role.name}`"
+            f"**Usuário:** {interaction.user.mention}\n"
+            f"**Cargo:** `{role.name}`"
         )
-
 
 # ============================
 #     PAINEL ADMINISTRATIVO
